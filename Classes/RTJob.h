@@ -6,7 +6,7 @@
 @property (strong, nonatomic) NSString *type;
 
 //任务标识, 相反的任务或相同的任务都应该有相同的identifier
-@property (assign, nonatomic) NSString *identifier;
+@property (strong, nonatomic) NSString *identifier;
 
 //创建任务的时间，单位：秒
 @property (assign, nonatomic) NSTimeInterval createdTime;
