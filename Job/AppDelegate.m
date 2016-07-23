@@ -8,6 +8,8 @@
 
 #import "AppDelegate.h"
 
+#import "RTJobManager.h"
+
 @interface AppDelegate ()
 
 @end
@@ -17,6 +19,11 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    [[RTJobManager sharedManager] saveJobsWhenPostNotification:UIApplicationDidEnterBackgroundNotification];
+    [[RTJobManager sharedManager] clearJobsWhenPostNotification:@"I.want.to.clear.jobs"];
+    [[RTJobManager sharedManager] start];
+    
     return YES;
 }
 

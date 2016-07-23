@@ -7,7 +7,7 @@
     if(self) {
         self.createdTime = [[NSDate date] timeIntervalSince1970];
         self.errorCode = 0;
-        self.retryTimes = 4;
+        self.retryTimes = 5;
         self.shouldSaved = YES;
         self.cancellable = YES;
         self.repeative = NO;
@@ -53,11 +53,16 @@
     return ![self.type isEqualToString:job.type] && ([self.identifier isEqualToString: job.identifier]);
 }
 
-- (void) executeWithBlock:(void(^)(int status))block {
+- (void) executeInQueue:(dispatch_queue_t)queue withBlock:(void(^)(int status))block {
     self.executing = YES;
     -- self.retryTimes;
     if(block) {
-        block(self.retryTimes == 0? self.errorCode+1 : 0);
+        if(self.retryTimes == 0) {
+            block(self.errorCode+1);
+//            printf("%s JOB %s expired.\n", [self.type UTF8String], [self.identifier UTF8String]);
+        } else {
+            block(0);
+        }
     }
     self.executing = NO;
 }

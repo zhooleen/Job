@@ -7,6 +7,8 @@
 //
 
 #import "ViewController.h"
+#import "RTTestJob.h"
+#import "RTJobManager.h"
 
 @interface ViewController ()
 
@@ -22,6 +24,18 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)onPositive:(id)sender {
+    self.label.text = @"+";
+    printf("assume success : +\n");
+    [[RTJobManager sharedManager] addJob:[RTTestJob positiveJob]];
+}
+
+- (IBAction)onNegative:(id)sender {
+    self.label.text = @"-";
+    printf("assume success : -\n");
+    [[RTJobManager sharedManager] addJob:[RTTestJob negativeJob]];
 }
 
 @end

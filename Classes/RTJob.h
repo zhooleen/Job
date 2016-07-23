@@ -1,5 +1,11 @@
 #import <Foundation/Foundation.h>
 
+/**
+ * Some time-consuming operations, usually the network request.
+ * The JobManager will do its best to make sure job executing successfully.
+ * So, assume it had executed successfully before it really executes, 
+ * update the UI according to the success hypothesis.
+ */
 @interface RTJob : NSObject <NSCoding>
 
 //任务的主类型，相反的任务通过type来区分
@@ -29,7 +35,7 @@
 @property (assign, nonatomic) BOOL repeative;
 
 //执行该任务需要的环境，状态，条件，参数等
-@property (strong, nonatomic) NSArray *parameters;
+@property (strong, nonatomic) NSDictionary *parameters;
 
 //是否在执行
 @property (assign, nonatomic) BOOL executing;
@@ -45,7 +51,7 @@
 
 /*****************************************************************\
  子类必须重载以下方法：
- 1.[executeWithBlock:]
+ 1.[executeInQueue:withBlock:]
  2.[inverseJob]
     > 存在相反的任务，且必须通过执行相反的动作来达到取消的目的的时候
     > 一般不用考虑
@@ -57,16 +63,18 @@
  0表示成功，其他的表示失败
  如果status与errorCode相等，取消任务
  子类重载方式：
- - (void) executeWithBlock:(void(^)(int status))block{
-    [super executeWithBlock:^(int sta) {
+ - (void) executeInQueue:(dispatch_queue_t)queue withBlock:(void(^)(int status))block{
+    [super executeInQueue:queue withBlock:^(int sta) {
         if(sta == 0) {
             sta = [self action...];
         }
-        block(sta);
+        dispatch_async(queue, ^{
+            block(sta);
+        ]);
     }];
  }
  */
-- (void) executeWithBlock:(void(^)(int status))block;
+- (void) executeInQueue:(dispatch_queue_t)queue withBlock:(void(^)(int status))block;
 
 /**
  如果在执行的时候取消，则会遇到以下几种情况：

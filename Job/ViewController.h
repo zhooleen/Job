@@ -10,6 +10,10 @@
 
 @interface ViewController : UIViewController
 
+@property (weak, nonatomic) IBOutlet UILabel *label;
+
+- (IBAction)onPositive:(id)sender;
+- (IBAction)onNegative:(id)sender;
 
 @end
 

@@ -2,13 +2,17 @@
 
 @interface RTJobManager ()
 
-@property (strong, nonatomic) NSMutableArray<NSString *> *keysQueue; //key = job.type + job.identifier
+@property (strong, nonatomic) NSMutableArray<NSString *> *keysQueue;
 
 @property (strong, nonatomic) NSMutableDictionary<NSString*, NSMutableArray<RTJob*>*> *jobMap;
 
 @property (assign, nonatomic) BOOL running;
 
 @property dispatch_queue_t exeQueue;
+
+@property (strong, nonatomic) NSMutableArray *savedNotifications;
+
+@property (strong, nonatomic) NSMutableArray *clearNotifications;
 
 @end
 
@@ -21,6 +25,8 @@
         self.jobMap = [NSMutableDictionary dictionary];
         self.running = NO;
         self.exeQueue = dispatch_queue_create("com.redeight.JobQueue", NULL); // 串行queue
+        self.savedNotifications = [NSMutableArray array];
+        self.clearNotifications = [NSMutableArray array];
     }
     return self;
 }
@@ -34,7 +40,7 @@
     return mgr;
 }
 
-#pragma mark - Control
+#pragma mark - PUBLIC
 
 - (void) start {
     if(!self.running) {
@@ -43,7 +49,7 @@
 }
 
 - (void) addJob:(RTJob*)job {
-    dispatch_block_t block = ^{
+    dispatch_async(self.exeQueue, ^{
         NSMutableArray *jobs = self.jobMap[job.identifier];
         if(jobs) {
             if(!job.repeative && [self findSameJob:job] != nil) {
@@ -57,18 +63,17 @@
                 }
             }
             [jobs addObject:job];
-            NSLog(@"Add Job : %@", job.type);
+            //printf("Add Job : %s\n", [job.type UTF8String]);
         } else {
             jobs = [NSMutableArray arrayWithObject:job];
             [self.jobMap setObject:jobs forKey:job.identifier];
             [self.keysQueue addObject:job.identifier];
-            NSLog(@"Add Job : %@", job.type);
+            //printf("Add Job : %s\n", [job.type UTF8String]);
         }
         if(self.running == NO) {
             [self restart];
         }
-    };
-    dispatch_async(self.exeQueue, block);
+    });
 }
 
 - (void) save {
@@ -83,6 +88,20 @@
     });
 }
 
+- (void) saveJobsWhenPostNotification:(NSString *)notificationName {
+    if(![self.savedNotifications containsObject:notificationName]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(save) name:notificationName object:nil];
+        [self.savedNotifications addObject:notificationName];
+    }
+}
+
+- (void) clearJobsWhenPostNotification:(NSString *)notificationName {
+    if(![self.clearNotifications containsObject:notificationName]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(clear) name:notificationName object:nil];
+        [self.clearNotifications addObject:notificationName];
+    }
+}
+
 #pragma mark - Private
 
 - (RTJob*) findSameJob:(RTJob*)job {
@@ -90,6 +109,7 @@
     if(jobs) {
         for (RTJob *j in jobs) {
             if([job isEqual:j]) {
+                //printf("FindSameJob %s\n", [job.identifier UTF8String]);
                 return j;
             }
         }
@@ -102,6 +122,7 @@
     if(jobs) {
         for (RTJob *j in jobs) {
             if([job isInverse:j] && j.executing == NO) {
+                //printf("findInverseJob %s\n", [job.identifier UTF8String]);
                 return j;
             }
         }
@@ -125,55 +146,56 @@
 }
 
 - (void) next {
-    dispatch_block_t block = ^{
-        NSLog(@"Next");
+    dispatch_async(self.exeQueue, ^{
+        //printf("Next\n");
         self.running = YES;
         if([self hasValidJob]) {
             NSString *key = self.keysQueue[0];
             RTJob *job = self.jobMap[key][0];
-            //        NSLog(@"Fetch JOB : %@", job.type);
+            //printf("Fetch JOB : %s\n", [job.type UTF8String]);
             if(job.retryTimes == 0) {
                 [self.keysQueue removeObject:key];
                 [self.keysQueue addObject:key];
-                sleep(1);
                 [self next];
                 return;
             }
-            [job executeWithBlock:^(int status) {
-                if(!self.running) {
-                    return;
-                }
-                if(status == 0) {
-                    NSLog(@"Finish Job : %@", job.type);
-                    [self removeJob:job];
-                } else if([self shouldCancelJob:job withStatus:status]) {
-#warning TODO post cancel notification her
-                    [self removeJob:job];
-                } else {
-                    [self.keysQueue removeObject:key];
-                    [self.keysQueue addObject:key];
-                    RTJob *inverseJob = [self findInverseJob:job];
-                    if(inverseJob) {
-                        [self removeJob:job];
-                        [self removeJob:inverseJob];
-                    }
-                }
-                sleep(1);
-                [self next];
-            }];
+            [self executeJob:job];
         } else {
             self.running = NO;
-            NSLog(@"No Jobs.");
+            //printf("No Jobs.\n");
         }
-    };
-    dispatch_async(self.exeQueue, block);
+    });
+}
+
+- (void) executeJob:(RTJob*)job {
+    [job executeInQueue:self.exeQueue withBlock:^(int status) {
+        if(!self.running) {
+            return;
+        }
+        if(status == 0) {
+            //printf("Finish Job : %s\n", [job.type UTF8String]);
+            [self removeJob:job];
+        } else if([self shouldCancelJob:job withStatus:status]) {
+#warning TODO post cancel notification her
+            [self removeJob:job];
+        } else {
+            [self.keysQueue removeObject:job.identifier];
+            [self.keysQueue addObject:job.identifier];
+            RTJob *inverseJob = [self findInverseJob:job];
+            if(inverseJob) {
+                [self removeJob:job];
+                [self removeJob:inverseJob];
+            }
+        }
+        [self next];
+    }];
 }
 
 - (void) removeJob:(RTJob*)job {
     if(job == nil) {
         return;
     }
-    NSLog(@"Remove Job : %@", job.type);
+    //printf("Remove Job : %s\n", [job.type UTF8String]);
     NSMutableArray *array = self.jobMap[job.identifier];
     if(array.count > 1) {
         [array removeObject:job];

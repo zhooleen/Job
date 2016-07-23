@@ -15,6 +15,7 @@
 		3E559DB21D3A71A300B4E390 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E559DB01D3A71A300B4E390 /* LaunchScreen.storyboard */; };
 		3E559DBE1D3A728500B4E390 /* RTJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E559DBB1D3A728500B4E390 /* RTJob.m */; };
 		3E559DBF1D3A728500B4E390 /* RTJobManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E559DBD1D3A728500B4E390 /* RTJobManager.m */; };
+		3EB9CA0A1D435AF2008CD2E9 /* RTTestJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EB9CA091D435AF2008CD2E9 /* RTTestJob.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,8 @@
 		3E559DBB1D3A728500B4E390 /* RTJob.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RTJob.m; path = Classes/RTJob.m; sourceTree = "<group>"; };
 		3E559DBC1D3A728500B4E390 /* RTJobManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RTJobManager.h; path = Classes/RTJobManager.h; sourceTree = "<group>"; };
 		3E559DBD1D3A728500B4E390 /* RTJobManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RTJobManager.m; path = Classes/RTJobManager.m; sourceTree = "<group>"; };
+		3EB9CA081D435AF2008CD2E9 /* RTTestJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTTestJob.h; sourceTree = "<group>"; };
+		3EB9CA091D435AF2008CD2E9 /* RTTestJob.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTTestJob.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +70,8 @@
 			children = (
 				3E559DA51D3A71A300B4E390 /* AppDelegate.h */,
 				3E559DA61D3A71A300B4E390 /* AppDelegate.m */,
+				3EB9CA081D435AF2008CD2E9 /* RTTestJob.h */,
+				3EB9CA091D435AF2008CD2E9 /* RTTestJob.m */,
 				3E559DA81D3A71A300B4E390 /* ViewController.h */,
 				3E559DA91D3A71A300B4E390 /* ViewController.m */,
 				3E559DAB1D3A71A300B4E390 /* Main.storyboard */,
@@ -168,6 +173,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E559DAA1D3A71A300B4E390 /* ViewController.m in Sources */,
+				3EB9CA0A1D435AF2008CD2E9 /* RTTestJob.m in Sources */,
 				3E559DA71D3A71A300B4E390 /* AppDelegate.m in Sources */,
 				3E559DBF1D3A728500B4E390 /* RTJobManager.m in Sources */,
 				3E559DA41D3A71A300B4E390 /* main.m in Sources */,
